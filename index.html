@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+  	<title>test</title>
+    <style>
+      #container {
+      	display: flex;
+      }
+
+      #mode_container {
+        flex: initial;
+        width: 300px;
+        overflow: scroll;
+      }
+
+      #controls_container {
+      	flex: none;
+      	width: 400px;
+      	overflow: scroll;
+      }
+
+      #stage_container {
+      	margin-top: 20px;
+      	flex: 2;
+      }
+
+      #map_list {
+      	margin-left: -10px;
+      }
+    </style>
+    <script src="js/main.js"></script>
+  </head>
+  <body>
+    <div id="container">
+      <div id="mode_container">
+        <div id="meta_mode">
+          <h2>Meta</h2>
+          <form id="meta_form">
+            <input name="meta_title" id="meta_title" placeholder="title" type="text">
+            <input name="meta_author" id="meta_author" placeholder="author" type="text">
+            <textarea name="meta_description" id="meta_description" placeholder="description" type="text"></textarea>
+          </form>
+        </div>
+        <div id="map_mode">
+          <h2>Maps</h2>
+          <ol id="map_list">
+          	<!--<li><p>town.jpg</p><img src="images/town.png" width=240 height=128></li>-->
+          </ol>
+        </div>
+      </div>
+      <div id="controls_container">
+        <div id="controls">
+          <h2>Controls</h2>
+          <form id="controls_form">
+          	<h3>Controls Form</h3>
+            <input name="map_title" id="map_title" placeholder="map title" type="text">
+            <input name="map_x_size" id="map_x_size" placeholder="e.g. 15" type="text">
+            <input name="map_y_size" id="map_y_size" placeholder="e.g. 20" type="text">
+            <div id="map_tilemap"></div>
+            <input name="map_image_name" id="map_image_name" placeholder="20" type="text">
+          </form>
+        </div>
+      </div>
+      <div id="stage_container">
+        <div id="stage">
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
