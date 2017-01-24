@@ -5,6 +5,7 @@ window.onload = function () {
   var active_tilemap = null;
   var source_x = 0, source_y = 0;
   var drawing;
+  var map;
   //context.fillRect(30, 30, 30, 30);
   context.fillStyle = "maroon";
 
@@ -39,7 +40,7 @@ window.onload = function () {
   drawMap(context, map);
   //saveMap(map)
 
-  tilemap = document.getElementById("map_tilemap");
+  var tilemap = document.getElementById("map_tilemap");
   tilemap.addEventListener("click", function(event) {
     //source_x = event.clientX - tilemap.offsetLeft;
     //source_y = event.clientY - tilemap.offsetTop;
@@ -48,13 +49,10 @@ window.onload = function () {
     console.log("source: " + source_x + ", " + source_y);
   });
 
-  stage = document.getElementById("stage")
+  var stage = document.getElementById("stage")
   stage.addEventListener("mousedown", function(event) {
     drawing = true;
-    dest_x = parseInt(32 * Math.floor((event.clientX - stage.offsetLeft) / 32));
-    dest_y = parseInt(32 * Math.floor((event.clientY - stage.offsetTop) / 32));
-    console.log("dest: " + dest_x + ", " + dest_y);
-    context.drawImage(image_register['big'][active_tilemap], source_x, source_y, 16, 16, dest_x, dest_y, 32, 32);
+    paintOnMap(event);
   });
 
   document.addEventListener("mouseup", function(event) {
@@ -63,11 +61,42 @@ window.onload = function () {
 
   stage.addEventListener("mousemove", function(event) {
     if (drawing) {
-      dest_x = parseInt(32 * Math.floor((event.clientX - stage.offsetLeft) / 32));
-      dest_y = parseInt(32 * Math.floor((event.clientY - stage.offsetTop) / 32));
-      console.log("dest: " + dest_x + ", " + dest_y);
-      context.drawImage(image_register['big'][active_tilemap], source_x, source_y, 16, 16, dest_x, dest_y, 32, 32);
+      paintOnMap(event);
     }
+  });
+
+  function paintOnMap(event) {
+      var x_index = parseInt(Math.floor((event.clientX - stage.offsetLeft) / 32)),
+        y_index = parseInt(Math.floor((event.clientY - stage.offsetTop) / 32))
+
+      if(!map[getKey(x_index, y_index)]) {
+        map[getKey(x_index, y_index)] = {};
+      }
+
+      map[getKey(x_index, y_index)]['tile'] = {
+        'filename': active_tilemap,
+        'x_index': source_x / 16,
+        'y_index': source_y / 16,
+      }
+      dest_x = 32 * x_index;
+      dest_y = 32 * y_index;
+      console.log("dest: " + dest_x + ", " + dest_y);
+      
+      context.drawImage(image_register['big'][active_tilemap], source_x, source_y, 16, 16, dest_x, dest_y, 32, 32);
+  }
+
+  var saveButton = document.getElementById("map_save");
+  var loadButton = document.getElementById("map_load");
+
+  saveButton.addEventListener("click", function(event) {
+    var mapText = document.getElementById("map_text");
+    mapText.value = saveMap(map);
+  });
+
+  loadButton.addEventListener("click", function(event) {
+    var mapText = document.getElementById("map_text");
+    map = loadMap(mapText.value);
+    drawMap(context, map);
   });
 
 function changeActiveTileMap(filename, image) {
@@ -109,14 +138,13 @@ function drawMap(context, map) {
 
     for (i = 0; i < xsize; i++) {
         for (j = 0; j < ysize; j++) {
-            cell = map[getKey(i, j)];
-            if (cell['value'] == "X") {
-                context.fillStyle = cell['color'];
-                context.strokeStyle = cell['color'];
-                context.strokeRect(
-                    i*block_x_offset, j * block_y_offset,
-                    block_x_size, block_y_size
-                );
+            context.strokeRect(
+                i * block_x_offset, j * block_y_offset,
+                block_x_size, block_y_size
+            );
+            tile = map[getKey(i, j)] ? map[getKey(i, j)]['tile'] : null;
+            if (tile) {
+              context.drawImage(image_register['big'][tile['filename']], tile['x_index']*16, tile['y_index']*16, 16, 16, i*32, j*32, 32, 32);
             }
         }
     }
@@ -158,20 +186,17 @@ function createMap(xsize, ysize) {
     map['xsize'] = xsize;
     map['ysize'] = ysize;
 
-    for (i = 0; i < xsize; i++) {
-        for (j = 0; j < ysize; j++) {
-            map[getKey(i, j)] = {
-                value: "X",
-                color: getNextColor()
-            }
-        }
-    }
+    //for (i = 0; i < xsize; i++) {
+    //    for (j = 0; j < ysize; j++) {
+    //        map[getKey(i, j)] = {}
+    //    }
+   // }
 
     return map;
 }
 
 function saveMap(map) {
-    return console.log(JSON.stringify(map));
+    return JSON.stringify(map);
 }
 
 function loadMap(map_definition) {

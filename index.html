@@ -42,7 +42,7 @@
           </form>
         </div>
         <div id="map_mode">
-          <h2>Maps</h2>
+          <h2>Tilemaps</h2>
           <ol id="map_list">
           	<!--<li><p>town.jpg</p><img src="images/town.png" width=240 height=128></li>-->
           </ol>
@@ -50,14 +50,15 @@
       </div>
       <div id="controls_container">
         <div id="controls">
-          <h2>Controls</h2>
+          <h2>Tilemap Controls</h2>
           <form id="controls_form">
-          	<h3>Controls Form</h3>
             <input name="map_title" id="map_title" placeholder="map title" type="text">
-            <input name="map_x_size" id="map_x_size" placeholder="e.g. 15" type="text">
-            <input name="map_y_size" id="map_y_size" placeholder="e.g. 20" type="text">
+            <input name="map_x_size" id="map_x_size" placeholder="map x-size e.g. 15" type="text">
+            <input name="map_y_size" id="map_y_size" placeholder="map y-size e.g. 20" type="text">
             <div id="map_tilemap"></div>
-            <input name="map_image_name" id="map_image_name" placeholder="20" type="text">
+            <input name="map_save" id="map_save" value="Export Map" type="button">
+            <input name="map_load" id="map_load" value="Load Map" type="button">
+            <textarea name="map_text" id="map_text" cols=40 rows=30></textarea>
           </form>
         </div>
       </div>
