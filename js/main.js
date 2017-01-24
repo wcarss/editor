@@ -8,7 +8,7 @@ window.onload = function () {
   //context.fillRect(30, 30, 30, 30);
   context.fillStyle = "maroon";
 
-  Promise.all(loadImages(image_register, ['images/town.png', 'images/main.png'])).then(
+  Promise.all(loadImages(image_register, ['images/town.png', 'images/main.png', 'images/dungeon.png', 'images/building.png'])).then(
   	function (images) {
       console.log("everything loaded!");
       console.log(image_register['small']);
