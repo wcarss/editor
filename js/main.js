@@ -44,8 +44,9 @@ window.onload = function () {
   tilemap.addEventListener("click", function(event) {
     //source_x = event.clientX - tilemap.offsetLeft;
     //source_y = event.clientY - tilemap.offsetTop;
-    source_x = parseInt(16 * Math.floor((event.clientX - tilemap.offsetLeft) / 16));
-    source_y = parseInt(16 * Math.floor((event.clientY - tilemap.offsetTop) / 16));
+    var scroll_state = getScrollState(tilemap.id);
+    source_x = parseInt(16 * Math.floor((event.clientX + scroll_state['scrollLeft'] - tilemap.offsetLeft) / 16));
+    source_y = parseInt(16 * Math.floor((event.clientY + scroll_state['scrollTop'] - tilemap.offsetTop) / 16));
     console.log("source: " + source_x + ", " + source_y);
   });
 
@@ -66,8 +67,20 @@ window.onload = function () {
   });
 
   function paintOnMap(event) {
-      var x_index = parseInt(Math.floor((event.clientX - stage.offsetLeft) / 32)),
-        y_index = parseInt(Math.floor((event.clientY - stage.offsetTop) / 32))
+      /*console.log("paint info:");
+      console.log("event clientX, clientY: " + event.clientX + ", " + event.clientY);
+      console.log("event screenX, screenY: " + event.screenX + ", " + event.screenY); 
+      console.log("event pageX, pageY: " + event.pageX + ", " + event.pageY); 
+      console.log("event x, y: " + event.x + ", " + event.y); 
+      console.log("stage offsetLeft, offsetTop: " + stage.offsetLeft + ", " + stage.offsetTop);
+      console.log("event:");
+      console.log(event);
+      console.log("stage:");
+      console.log(stage);
+      */
+      var scroll_state = getScrollState(stage.id);
+      var x_index = parseInt(Math.floor((event.clientX + scroll_state['scrollLeft'] - stage.offsetLeft) / 32)),
+        y_index = parseInt(Math.floor((event.clientY + scroll_state['scrollTop'] - stage.offsetTop) / 32))
 
       if(!map[getKey(x_index, y_index)]) {
         map[getKey(x_index, y_index)] = {};
@@ -98,6 +111,23 @@ window.onload = function () {
     map = loadMap(mapText.value);
     drawMap(context, map);
   });
+
+function getScrollState (id) {
+  var node = document.getElementById(id),
+    scrollTop = 0,
+    scrollLeft = 0;
+
+  while(node.parentNode != null) {
+    scrollTop += node.scrollTop;
+    scrollLeft += node.scrollLeft;
+    node = node.parentNode;
+  }
+
+  console.log("scroll state:");
+  scroll_state = {scrollTop: scrollTop, scrollLeft: scrollLeft};
+  console.log(scroll_state);
+  return scroll_state;
+}
 
 function changeActiveTileMap(filename, image) {
   active_tilemap = filename;
