@@ -1,5 +1,6 @@
 window.onload = function () {
   var canvas = addCanvas("stage", "canvas_layer_1", 780, 680);
+  var tilemap_canvas = document.getElementById("map_tilemap_canvas");
   var context = canvas.getContext("2d");
   var image_register = {'small': {}, 'big': {}};
   var active_tilemap = null;
@@ -45,8 +46,8 @@ window.onload = function () {
     //source_x = event.clientX - tilemap.offsetLeft;
     //source_y = event.clientY - tilemap.offsetTop;
     var scroll_state = getScrollState(tilemap.id);
-    source_x = parseInt(16 * Math.floor((event.clientX + scroll_state['scrollLeft'] - tilemap.offsetLeft) / 16));
-    source_y = parseInt(16 * Math.floor((event.clientY + scroll_state['scrollTop'] - tilemap.offsetTop) / 16));
+    source_x = parseInt(32 * Math.floor((event.clientX + scroll_state['scrollLeft'] - tilemap.offsetLeft) / 32));
+    source_y = parseInt(32 * Math.floor((event.clientY + scroll_state['scrollTop'] - tilemap.offsetTop) / 32));
     console.log("source: " + source_x + ", " + source_y);
   });
 
@@ -88,14 +89,14 @@ window.onload = function () {
 
       map[getKey(x_index, y_index)]['tile'] = {
         'filename': active_tilemap,
-        'x_index': source_x / 16,
-        'y_index': source_y / 16,
+        'x_index': source_x / 32,
+        'y_index': source_y / 32,
       }
       dest_x = 32 * x_index;
       dest_y = 32 * y_index;
       console.log("dest: " + dest_x + ", " + dest_y);
       
-      context.drawImage(image_register['big'][active_tilemap], source_x, source_y, 16, 16, dest_x, dest_y, 32, 32);
+      context.drawImage(tilemap_canvas, source_x, source_y, 32, 32, dest_x, dest_y, 32, 32);
   }
 
   var saveButton = document.getElementById("map_save");
@@ -130,10 +131,12 @@ function getScrollState (id) {
 }
 
 function changeActiveTileMap(filename, image) {
-  active_tilemap = filename;
-	div = document.getElementById("map_tilemap");
-	div.innerHTML = "";
-	div.appendChild(image);
+    active_tilemap = filename;
+	var canvas = document.getElementById("map_tilemap_canvas");
+    var ctx = canvas.getContext("2d");
+    canvas.width = 960;
+    canvas.height = 512;
+    ctx.drawImage(image, 0, 0, 480, 256, 0, 0, 960, 512);
 }
 
 function addCanvas(node_id, id, width, height) {
