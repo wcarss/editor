@@ -2,7 +2,7 @@ window.onload = function () {
   var canvas = addCanvas("stage", "canvas_layer_1", 780, 680);
   var tilemap_canvas = document.getElementById("map_tilemap_canvas");
   var context = canvas.getContext("2d");
-  var image_register = {'small': {}, 'big': {}};
+  var image_register = {};
   var active_tilemap = null;
   var source_x = 0, source_y = 0;
   var drawing;
@@ -10,25 +10,16 @@ window.onload = function () {
   //context.fillRect(30, 30, 30, 30);
   context.fillStyle = "maroon";
 
-  Promise.all(loadImages(image_register, ['images/town.png', 'images/main.png', 'images/dungeon.png', 'images/building.png'])).then(
+  Promise.all(loadImages(['images/town.png', 'images/main.png', 'images/dungeon.png', 'images/building.png'])).then(
   	function (images) {
       console.log("everything loaded!");
-      console.log(image_register['small']);
-      console.log(image_register['big']);
-      //for (filename in image_register['big']) {
-      //  image = image_register['big'][filename];
-      //}
-      for (filename in image_register['small']) {
-      	image = image_register['small'][filename];
-      	addTileMap(filename, image);
-      	image.addEventListener(
-      		'click', function (filename) {
-      	      return function () {
-      	        changeActiveTileMap(filename, image_register['big'][filename]);
-      	      }
-      	    }(filename),
-      	    false
-      	);
+      console.log(images);
+      for (i in images) {
+        image_reference = images[i];
+        image = image_reference['img'];
+        filename = image_reference['filename'];
+        image_register[filename] = canvasFromImage(image);
+        addTileMap(filename, image);
       }
   	}, function () {
       console.log("trouble!");
@@ -131,12 +122,27 @@ function getScrollState (id) {
 }
 
 function changeActiveTileMap(filename, image) {
-    active_tilemap = filename;
-	var canvas = document.getElementById("map_tilemap_canvas");
-    var ctx = canvas.getContext("2d");
-    canvas.width = 960;
-    canvas.height = 512;
-    ctx.drawImage(image, 0, 0, 480, 256, 0, 0, 960, 512);
+  active_tilemap = filename;
+  var canvas = document.getElementById("map_tilemap_canvas");
+  var ctx = canvas.getContext("2d");
+  canvas.width = 960;
+  canvas.height = 512;
+  ctx.drawImage(image, 0, 0, 960, 512);
+}
+
+function canvasFromImage(image, width, height) {
+  var canvas = document.createElement("canvas");
+  if (typeof width === "undefined") {
+    width = image.width;
+  }
+  if (typeof height === "undefined") {
+   height = image.height;
+  }
+  canvas.width = width;
+  canvas.height = height;
+  var context = canvas.getContext("2d");
+  context.drawImage(image, 0, 0, image.width, image.height, 0, 0, width, height);
+  return canvas;
 }
 
 function addCanvas(node_id, id, width, height) {
@@ -151,17 +157,24 @@ function addCanvas(node_id, id, width, height) {
   return canvas;
 }
 
-function addTileMap(filename, img) {
+function addTileMap(filename, image) {
   var li = document.createElement('li'),
-    p = document.createElement('p')
+    p = document.createElement('p'),
     ol = document.getElementById("map_list");
 
-    img.width = 240;
-    img.height = 128;
-    p.innerHTML = filename;
-    li.appendChild(p);
-    li.appendChild(img);
-    ol.appendChild(li);
+  var tilemap_canvas = canvasFromImage(image, 240, 128);
+  tilemap_canvas.addEventListener('click', function () {
+      changeActiveTileMap(filename, image_register[filename]);
+    },
+    false
+  );
+
+  p.innerHTML = filename;
+  li.appendChild(p);
+  li.appendChild(tilemap_canvas);
+  ol.appendChild(li);
+
+  return tilemap_canvas;
 }
 
 function drawMap(context, map) {
@@ -177,21 +190,16 @@ function drawMap(context, map) {
             );
             tile = map[getKey(i, j)] ? map[getKey(i, j)]['tile'] : null;
             if (tile) {
-              context.drawImage(image_register['big'][tile['filename']], tile['x_index']*16, tile['y_index']*16, 16, 16, i*32, j*32, 32, 32);
+              context.drawImage(image_register[tile['filename']], tile['x_index']*16, tile['y_index']*16, 16, 16, i*32, j*32, 32, 32);
             }
         }
     }
 }
 
-function loadImages(image_register, filenames) {
+function loadImages(filenames) {
 	image_promises = [];
 	for (i in filenames) {
-		big_image = loadImage(filenames[i]);
-		image_promises.push(big_image);
-		image_register['big'][filenames[i]] = big_image;
-		small_image = loadImage(filenames[i]);
-		image_promises.push(small_image);
-		image_register['small'][filenames[i]] = small_image;
+		image_promises.push(loadImage(filenames[i]));
 	}
 	return image_promises;
 }
@@ -202,16 +210,16 @@ function loadImage(filename) {
 		function(resolve, reject) {
 			img.addEventListener("load", function() {
 				console.log("image filename: " + filename + " loaded successfully!");
-				resolve(img);
+				resolve({'filename': filename, 'img': img});
 			}, false);
 			img.addEventListener("error", function() {
 				console.log("image filename: " + filename + " failed to load!");
-	  			resolve(img);
+	  			reject();
 			}, false);
 		}
 	);
 	img.src = filename;
-	return img;
+	return promise
 }
 
 function createMap(xsize, ysize) {
@@ -250,4 +258,25 @@ function getKey(a, b) {
     return a + ", " + b;
 }
 
+}
+
+// manual testing utility functions
+
+function offscreen_canvas(width, height) {
+  var canvas = document.createElement("canvas");
+  if (width) {
+    canvas.width = width;
+    canvas.height = height;
+  }
+  ctx = canvas.getContext("2d");
+  return {c: canvas, ctx: ctx};  
+}
+function attach_canvas(canvas, name) {
+  var ol = document.getElementById("map_list");
+  var li = document.createElement("li");
+  var p = document.createElement("p");
+  p.innerHTML = name;
+  li.appendChild(p);
+  li.appendChild(canvas);
+  ol.appendChild(li);
 }
