@@ -8,13 +8,13 @@
       }
 
       #mode_container {
-        flex: 1 1 auto;
+        flex: none;
         width: 300px;
         overflow: scroll;
       }
 
       #controls_container {
-        flex: 1 1 auto;
+        flex: none;
       	width: 400px;
       	overflow: scroll;
       }
@@ -26,6 +26,22 @@
 
       #map_list {
       	margin-left: -10px;
+      }
+
+      #map_layer_list {
+        display: inline-block;
+        padding-left: 10px;
+      }
+
+      .map_layer_list_item {
+        display: inline-block;
+        border: 1px solid black;
+        padding: 5px 5px;
+      }
+
+      .active_layer {
+        color: red;
+        font-weight: bold;
       }
     </style>
     <script src="js/main.js"></script>
@@ -52,10 +68,15 @@
         <div id="controls">
           <h2>Tilemap Controls</h2>
           <form id="controls_form">
+            <div id="map_layers_container">
+              <input name="map_layer_add" id="map_layer_add" value="Add Layer" type="button">
+              <ol id="map_layer_list">
+              </ol>
+            </div>
             <input name="map_title" id="map_title" placeholder="map title" type="text">
             <input name="map_x_size" id="map_x_size" placeholder="map x-size e.g. 15" type="text">
             <input name="map_y_size" id="map_y_size" placeholder="map y-size e.g. 20" type="text">
-            <div id="map_tilemap"><canvas id="map_tilemap_canvas" width=960 height=512>no tilemap yet</canvas></div>
+            <div id="map_tilemap"><canvas id="map_tilemap_canvas">tilemap canvas can't draw</canvas></div>
             <input name="map_save" id="map_save" value="Export Map" type="button">
             <input name="map_load" id="map_load" value="Load Map" type="button">
             <textarea name="map_text" id="map_text" cols=40 rows=30></textarea>

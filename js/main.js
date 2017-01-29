@@ -7,7 +7,6 @@ window.onload = function () {
   var source_x = 0, source_y = 0;
   var drawing;
   var map;
-  //context.fillRect(30, 30, 30, 30);
   context.fillStyle = "maroon";
 
   Promise.all(loadImages(['images/town.png', 'images/main.png', 'images/dungeon.png', 'images/building.png'])).then(
@@ -28,14 +27,11 @@ window.onload = function () {
   console.log("promises registered!");
 
   map = createMap(38, 34);
-  //map = loadMap();
   drawMap(context, map);
-  //saveMap(map)
+  fixLayerButtons(map);
 
   var tilemap = document.getElementById("map_tilemap");
   tilemap.addEventListener("click", function(event) {
-    //source_x = event.clientX - tilemap.offsetLeft;
-    //source_y = event.clientY - tilemap.offsetTop;
     var scroll_state = getScrollState(tilemap.id);
     source_x = parseInt(32 * Math.floor((event.clientX + scroll_state['scrollLeft'] - tilemap.offsetLeft) / 32));
     source_y = parseInt(32 * Math.floor((event.clientY + scroll_state['scrollTop'] - tilemap.offsetTop) / 32));
@@ -59,26 +55,17 @@ window.onload = function () {
   });
 
   function paintOnMap(event) {
-      /*console.log("paint info:");
-      console.log("event clientX, clientY: " + event.clientX + ", " + event.clientY);
-      console.log("event screenX, screenY: " + event.screenX + ", " + event.screenY); 
-      console.log("event pageX, pageY: " + event.pageX + ", " + event.pageY); 
-      console.log("event x, y: " + event.x + ", " + event.y); 
-      console.log("stage offsetLeft, offsetTop: " + stage.offsetLeft + ", " + stage.offsetTop);
-      console.log("event:");
-      console.log(event);
-      console.log("stage:");
-      console.log(stage);
-      */
       var scroll_state = getScrollState(stage.id);
       var x_index = parseInt(Math.floor((event.clientX + scroll_state['scrollLeft'] - stage.offsetLeft) / 32)),
         y_index = parseInt(Math.floor((event.clientY + scroll_state['scrollTop'] - stage.offsetTop) / 32))
 
-      if(!map[getKey(x_index, y_index)]) {
-        map[getKey(x_index, y_index)] = {};
+      layer = map['layers'][map['meta']['active_layer']];
+
+      if(!layer[getKey(x_index, y_index)]) {
+        layer[getKey(x_index, y_index)] = {};
       }
 
-      map[getKey(x_index, y_index)]['tile'] = {
+      layer[getKey(x_index, y_index)] = {
         'filename': active_tilemap,
         'x_index': source_x / 32,
         'y_index': source_y / 32,
@@ -86,12 +73,23 @@ window.onload = function () {
       dest_x = 32 * x_index;
       dest_y = 32 * y_index;
       console.log("dest: " + dest_x + ", " + dest_y);
-      
-      context.drawImage(tilemap_canvas, source_x, source_y, 32, 32, dest_x, dest_y, 32, 32);
+
+      context.clearRect(dest_x, dest_y, 32, 32);
+      for (var layer_index = 1; layer_index <= map['meta']['top_layer']; layer_index++) {
+        layer = map['layers'][layer_index];
+        tile = map['layers'][layer_index][getKey(x_index, y_index)];
+        if (tile) {
+          temp_source_x = tile['x_index'];
+          temp_source_y = tile['y_index'];
+          tilemap_canvas = image_register[tile['filename']];
+          context.drawImage(tilemap_canvas, temp_source_x*16, temp_source_y*16, 16, 16, dest_x, dest_y, 32, 32);
+        }
+      }
   }
 
   var saveButton = document.getElementById("map_save");
   var loadButton = document.getElementById("map_load");
+  var mapLayerAddButton = document.getElementById("map_layer_add");
 
   saveButton.addEventListener("click", function(event) {
     var mapText = document.getElementById("map_text");
@@ -101,8 +99,58 @@ window.onload = function () {
   loadButton.addEventListener("click", function(event) {
     var mapText = document.getElementById("map_text");
     map = loadMap(mapText.value);
+    map_layer_list = document.getElementById("map_layer_list");
+    map_layer_list.innerHTML = "";
+
     drawMap(context, map);
+    fixLayerButtons(map);
   });
+
+  mapLayerAddButton.addEventListener("click", function(event) {
+    addLayer(map);
+    fixLayerButtons(map);
+  });
+
+  function addLayer(map) {
+    var top_layer = map['meta']['top_layer'];
+    if (!top_layer) {
+      top_layer = 1;
+    } else {
+      top_layer += 1;
+    }
+    map['meta']['top_layer'] = top_layer;
+    if (typeof map['layers'][top_layer] === "undefined") {
+      map['layers'][top_layer] = {};
+    }
+    map['meta']['active_layer'] = top_layer;;
+  }
+
+function fixLayerButtons(map)  {
+  var ol = document.getElementById("map_layer_list");
+  ol.innerHTML = "";
+  for (var i = 1; i <= map['meta']['top_layer']; i++) {
+    addLayerButton(i, map);
+  }
+}
+
+function addLayerButton(num, map) {
+  var ol = document.getElementById("map_layer_list");
+  var li = document.createElement("li");
+  li.className = "map_layer_list_item";
+  if (num === map['meta']['active_layer']) {
+    li.className = "map_layer_list_item active_layer";
+  }
+  li.innerHTML = num;
+  li.addEventListener("click", function(event) {
+    map['meta']['active_layer'] = num;
+    layer_buttons = document.getElementsByClassName("map_layer_list_item");
+    for (var i = 0; i < layer_buttons.length; i++) {
+      layer_buttons[i].className = "map_layer_list_item";
+    }
+    event.target.className = "map_layer_list_item active_layer";
+  });
+  ol.appendChild(li);
+}
 
 function getScrollState (id) {
   var node = document.getElementById(id),
@@ -115,10 +163,7 @@ function getScrollState (id) {
     node = node.parentNode;
   }
 
-  console.log("scroll state:");
-  scroll_state = {scrollTop: scrollTop, scrollLeft: scrollLeft};
-  console.log(scroll_state);
-  return scroll_state;
+  return {scrollTop: scrollTop, scrollLeft: scrollLeft};
 }
 
 function changeActiveTileMap(filename, image) {
@@ -127,6 +172,7 @@ function changeActiveTileMap(filename, image) {
   var ctx = canvas.getContext("2d");
   canvas.width = 960;
   canvas.height = 512;
+  ctx.clearRect(0, 0, 960, 512);
   ctx.drawImage(image, 0, 0, 960, 512);
 }
 
@@ -149,10 +195,17 @@ function addCanvas(node_id, id, width, height) {
   var canvas = document.createElement('canvas'),
     div = document.getElementById(node_id);
 
+  canvas.style = "position: absolute;";
   canvas.id = id;
   canvas.width = width;
   canvas.height = height;
-  div.appendChild(canvas);
+  if (div.firstChild) {
+    div.insertBefore(canvas, div.firstChild);
+    console.log('prepended!');
+  } else {
+    div.appendChild(canvas);
+    console.log('appended!');
+  }
 
   return canvas;
 }
@@ -178,33 +231,30 @@ function addTileMap(filename, image) {
 }
 
 function drawMap(context, map) {
-    var block_x_offset = 32, block_y_offset = 32,
-        block_x_size = 32, block_y_size = 32,
-        xsize = map['xsize'], ysize = map['ysize'];
+  var block_x_offset = 32, block_y_offset = 32,
+    block_x_size = 32, block_y_size = 32,
+    xsize = map['meta']['xsize'], ysize = map['meta']['ysize'],
+    top_layer = map['meta']['top_layer'];
 
+  for (var layer_index = 1; layer_index <= top_layer; layer_index++) {
+    layer = map['layers'][layer_index];
     for (i = 0; i < xsize; i++) {
-        for (j = 0; j < ysize; j++) {
-            context.strokeRect(
-                i * block_x_offset, j * block_y_offset,
-                block_x_size, block_y_size
-            );
-            tile = map[getKey(i, j)] ? map[getKey(i, j)]['tile'] : null;
-            if (tile) {
-              context.drawImage(image_register[tile['filename']], tile['x_index']*16, tile['y_index']*16, 16, 16, i*32, j*32, 32, 32);
-            }
+      for (j = 0; j < ysize; j++) {
+        context.strokeRect(
+          i * block_x_offset, j * block_y_offset,
+          block_x_size, block_y_size
+        );
+        tile = layer[getKey(i, j)];
+        if (tile) {
+          context.drawImage(image_register[tile['filename']], tile['x_index']*16, tile['y_index']*16, 16, 16, i*32, j*32, 32, 32);
         }
+      }
     }
+  }
 }
 
 function loadImages(filenames) {
-	image_promises = [];
-	for (i in filenames) {
-		image_promises.push(loadImage(filenames[i]));
-	}
-	return image_promises;
-}
-
-function loadImage(filename) {
+  function loadImage(filename) {
 	var img = new Image();
 	var promise = new Promise(
 		function(resolve, reject) {
@@ -220,20 +270,26 @@ function loadImage(filename) {
 	);
 	img.src = filename;
 	return promise
+  }
+
+  image_promises = [];
+  for (i in filenames) {
+    image_promises.push(loadImage(filenames[i]));
+  }
+  return image_promises;
 }
 
 function createMap(xsize, ysize) {
-    var map = {}
-    map['xsize'] = xsize;
-    map['ysize'] = ysize;
-
-    //for (i = 0; i < xsize; i++) {
-    //    for (j = 0; j < ysize; j++) {
-    //        map[getKey(i, j)] = {}
-    //    }
-   // }
-
-    return map;
+  var map = {
+    'meta': {
+      'xsize': xsize,
+      'ysize': ysize,
+    },
+    'layers': {
+    }
+  };
+  addLayer(map);
+  return map;
 }
 
 function saveMap(map) {
