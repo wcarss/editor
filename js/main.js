@@ -7,9 +7,9 @@ window.onload = function () {
   var source_x = 0, source_y = 0;
   var drawing;
   var map;
-  context.fillStyle = "maroon";
+  var image_names = ['images/town.png', 'images/main.png', 'images/dungeon.png', 'images/building.png'];
 
-  Promise.all(loadImages(['images/town.png', 'images/main.png', 'images/dungeon.png', 'images/building.png'])).then(
+  Promise.all(loadImages(image_names)).then(
   	function (images) {
       console.log("everything loaded!");
       console.log(images);
@@ -24,7 +24,6 @@ window.onload = function () {
       console.log("trouble!");
       console.log(image_register);
   });
-  console.log("promises registered!");
 
   map = createMap(38, 34);
   drawMap(context, map);
@@ -201,10 +200,8 @@ function addCanvas(node_id, id, width, height) {
   canvas.height = height;
   if (div.firstChild) {
     div.insertBefore(canvas, div.firstChild);
-    console.log('prepended!');
   } else {
     div.appendChild(canvas);
-    console.log('appended!');
   }
 
   return canvas;
@@ -300,39 +297,9 @@ function loadMap(map_definition) {
     return JSON.parse(map_definition);
 }
 
-function getNextColor() {
-    r = parseInt(Math.round(Math.random() * 92)) + 84;
-    g = parseInt(Math.round(Math.random() * 64)) + 30; 
-    b = parseInt(Math.round(Math.random() * 32)) + 32;
-//  r = Math.round(Math.random() * 128 + 64);
-//  g = Math.round(Math.random() * 192 + 64);
-//  b = Math.round(Math.random() * 64 + 110);
-    return "rgba(" + r + ", " + g + ", " + b + ", 0.8)";
-}
-
 function getKey(a, b) {
     return a + ", " + b;
 }
 
 }
 
-// manual testing utility functions
-
-function offscreen_canvas(width, height) {
-  var canvas = document.createElement("canvas");
-  if (width) {
-    canvas.width = width;
-    canvas.height = height;
-  }
-  ctx = canvas.getContext("2d");
-  return {c: canvas, ctx: ctx};  
-}
-function attach_canvas(canvas, name) {
-  var ol = document.getElementById("map_list");
-  var li = document.createElement("li");
-  var p = document.createElement("p");
-  p.innerHTML = name;
-  li.appendChild(p);
-  li.appendChild(canvas);
-  ol.appendChild(li);
-}
