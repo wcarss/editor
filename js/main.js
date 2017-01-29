@@ -1,5 +1,5 @@
 window.onload = function () {
-  var canvas = addCanvas("stage", "canvas_layer_1", 780, 680);
+  var canvas = add_canvas("stage", "canvas_layer_1", 780, 680);
   var tilemap_canvas = document.getElementById("map_tilemap_canvas");
   var context = canvas.getContext("2d");
   var image_register = {};
@@ -9,7 +9,7 @@ window.onload = function () {
   var map;
   var image_names = ['images/town.png', 'images/main.png', 'images/dungeon.png', 'images/building.png'];
 
-  Promise.all(loadImages(image_names)).then(
+  Promise.all(load_images(image_names)).then(
   	function (images) {
       console.log("everything loaded!");
       console.log(images);
@@ -17,30 +17,30 @@ window.onload = function () {
         image_reference = images[i];
         image = image_reference['img'];
         filename = image_reference['filename'];
-        image_register[filename] = canvasFromImage(image);
-        addTileMap(filename, image);
+        image_register[filename] = canvas_from_image(image);
+        add_tile_map(filename, image);
       }
   	}, function () {
       console.log("trouble!");
       console.log(image_register);
   });
 
-  map = createMap(38, 34);
-  drawMap(context, map);
-  fixLayerButtons(map);
+  map = create_map(38, 34);
+  draw_map(context, map);
+  fix_layer_buttons(map);
 
   var tilemap = document.getElementById("map_tilemap");
   tilemap.addEventListener("click", function(event) {
-    var scroll_state = getScrollState(tilemap.id);
-    source_x = parseInt(32 * Math.floor((event.clientX + scroll_state['scrollLeft'] - tilemap.offsetLeft) / 32));
-    source_y = parseInt(32 * Math.floor((event.clientY + scroll_state['scrollTop'] - tilemap.offsetTop) / 32));
+    var scroll_state = get_scroll_state(tilemap.id);
+    source_x = parseInt(32 * Math.floor((event.clientX + scroll_state['scroll_left'] - tilemap.offsetLeft) / 32));
+    source_y = parseInt(32 * Math.floor((event.clientY + scroll_state['scroll_top'] - tilemap.offsetTop) / 32));
     console.log("source: " + source_x + ", " + source_y);
   });
 
   var stage = document.getElementById("stage");
   stage.addEventListener("mousedown", function(event) {
     drawing = true;
-    paintOnMap(event);
+    paint_on_map(event);
   });
 
   document.addEventListener("mouseup", function(event) {
@@ -49,22 +49,22 @@ window.onload = function () {
 
   stage.addEventListener("mousemove", function(event) {
     if (drawing) {
-      paintOnMap(event);
+      paint_on_map(event);
     }
   });
 
-  function paintOnMap(event) {
-    var scroll_state = getScrollState(stage.id);
-    var x_index = parseInt(Math.floor((event.clientX + scroll_state['scrollLeft'] - stage.offsetLeft) / 32)),
-      y_index = parseInt(Math.floor((event.clientY + scroll_state['scrollTop'] - stage.offsetTop) / 32));
+  function paint_on_map(event) {
+    var scroll_state = get_scroll_state(stage.id);
+    var x_index = parseInt(Math.floor((event.clientX + scroll_state['scroll_left'] - stage.offsetLeft) / 32)),
+      y_index = parseInt(Math.floor((event.clientY + scroll_state['scroll_top'] - stage.offsetTop) / 32));
 
     layer = map['layers'][map['meta']['active_layer']];
 
-    if(!layer[getKey(x_index, y_index)]) {
-      layer[getKey(x_index, y_index)] = {};
+    if(!layer[get_key(x_index, y_index)]) {
+      layer[get_key(x_index, y_index)] = {};
     }
 
-    layer[getKey(x_index, y_index)] = {
+    layer[get_key(x_index, y_index)] = {
       'filename': active_tilemap,
       'x_index': source_x / 32,
       'y_index': source_y / 32,
@@ -76,7 +76,7 @@ window.onload = function () {
     context.clearRect(dest_x, dest_y, 32, 32);
     for (var layer_index = 1; layer_index <= map['meta']['top_layer']; layer_index++) {
       layer = map['layers'][layer_index];
-      tile = map['layers'][layer_index][getKey(x_index, y_index)];
+      tile = map['layers'][layer_index][get_key(x_index, y_index)];
       if (tile) {
         temp_source_x = tile['x_index'];
         temp_source_y = tile['y_index'];
@@ -86,31 +86,31 @@ window.onload = function () {
     }
   }
 
-  var saveButton = document.getElementById("map_save");
-  var loadButton = document.getElementById("map_load");
-  var mapLayerAddButton = document.getElementById("map_layer_add");
+  var save_button = document.getElementById("map_save");
+  var load_button = document.getElementById("map_load");
+  var map_layer_add_button = document.getElementById("map_layer_add");
 
-  saveButton.addEventListener("click", function(event) {
-    var mapText = document.getElementById("map_text");
-    mapText.value = saveMap(map);
+  save_button.addEventListener("click", function(event) {
+    var map_text = document.getElementById("map_text");
+    map_text.value = save_map(map);
   });
 
-  loadButton.addEventListener("click", function(event) {
-    var mapText = document.getElementById("map_text");
-    map = loadMap(mapText.value);
+  load_button.addEventListener("click", function(event) {
+    var map_text = document.getElementById("map_text");
+    map = load_map(map_text.value);
     map_layer_list = document.getElementById("map_layer_list");
     map_layer_list.innerHTML = "";
 
-    drawMap(context, map);
-    fixLayerButtons(map);
+    draw_map(context, map);
+    fix_layer_buttons(map);
   });
 
-  mapLayerAddButton.addEventListener("click", function(event) {
-    addLayer(map);
-    fixLayerButtons(map);
+  map_layer_add_button.addEventListener("click", function(event) {
+    add_layer(map);
+    fix_layer_buttons(map);
   });
 
-  function addLayer(map) {
+  function add_layer(map) {
     var top_layer = map['meta']['top_layer'];
     if (!top_layer) {
       top_layer = 1;
@@ -124,15 +124,15 @@ window.onload = function () {
     map['meta']['active_layer'] = top_layer;;
   }
 
-  function fixLayerButtons(map)  {
+  function fix_layer_buttons(map)  {
     var ol = document.getElementById("map_layer_list");
     ol.innerHTML = "";
     for (var i = 1; i <= map['meta']['top_layer']; i++) {
-      addLayerButton(i, map);
+      add_layer_button(i, map);
     }
   }
 
-  function addLayerButton(num, map) {
+  function add_layer_button(num, map) {
     var ol = document.getElementById("map_layer_list");
     var li = document.createElement("li");
     li.className = "map_layer_list_item";
@@ -151,21 +151,21 @@ window.onload = function () {
     ol.appendChild(li);
   }
 
-  function getScrollState (id) {
+  function get_scroll_state (id) {
     var node = document.getElementById(id),
-      scrollTop = 0,
-      scrollLeft = 0;
+      scroll_top = 0,
+      scroll_left = 0;
 
     while(node.parentNode != null) {
-      scrollTop += node.scrollTop;
-      scrollLeft += node.scrollLeft;
+      scroll_top += node.scrollTop;
+      scroll_left += node.scrollLeft;
       node = node.parentNode;
     }
 
-    return {scrollTop: scrollTop, scrollLeft: scrollLeft};
+    return {scroll_top: scroll_top, scroll_left: scroll_left};
   }
 
-  function changeActiveTileMap(filename, image) {
+  function change_active_tilemap(filename, image) {
     active_tilemap = filename;
     var canvas = document.getElementById("map_tilemap_canvas");
     var ctx = canvas.getContext("2d");
@@ -175,7 +175,7 @@ window.onload = function () {
     ctx.drawImage(image, 0, 0, 960, 512);
   }
 
-  function canvasFromImage(image, width, height) {
+  function canvas_from_image(image, width, height) {
     var canvas = document.createElement("canvas");
     if (typeof width === "undefined") {
       width = image.width;
@@ -190,7 +190,7 @@ window.onload = function () {
     return canvas;
   }
 
-  function addCanvas(node_id, id, width, height) {
+  function add_canvas(node_id, id, width, height) {
     var canvas = document.createElement('canvas'),
       div = document.getElementById(node_id);
 
@@ -207,14 +207,14 @@ window.onload = function () {
     return canvas;
   }
 
-  function addTileMap(filename, image) {
+  function add_tile_map(filename, image) {
     var li = document.createElement('li'),
       p = document.createElement('p'),
       ol = document.getElementById("map_list");
 
-    var tilemap_canvas = canvasFromImage(image, 240, 128);
+    var tilemap_canvas = canvas_from_image(image, 240, 128);
     tilemap_canvas.addEventListener('click', function () {
-      changeActiveTileMap(filename, image_register[filename]);
+      change_active_tilemap(filename, image_register[filename]);
     }, false);
 
     p.innerHTML = filename;
@@ -225,7 +225,7 @@ window.onload = function () {
     return tilemap_canvas;
   }
 
-  function drawMap(context, map) {
+  function draw_map(context, map) {
     var block_x_offset = 32, block_y_offset = 32,
       block_x_size = 32, block_y_size = 32,
       xsize = map['meta']['xsize'], ysize = map['meta']['ysize'],
@@ -239,7 +239,7 @@ window.onload = function () {
             i * block_x_offset, j * block_y_offset,
             block_x_size, block_y_size
           );
-          tile = layer[getKey(i, j)];
+          tile = layer[get_key(i, j)];
           if (tile) {
             context.drawImage(image_register[tile['filename']], tile['x_index']*16, tile['y_index']*16, 16, 16, i*32, j*32, 32, 32);
           }
@@ -248,8 +248,8 @@ window.onload = function () {
     }
   }
 
-  function loadImages(filenames) {
-    function loadImage(filename) {
+  function load_images(filenames) {
+    function load_image(filename) {
       var img = new Image();
       var promise = new Promise(
         function(resolve, reject) {
@@ -267,12 +267,12 @@ window.onload = function () {
     }
     image_promises = [];
     for (i in filenames) {
-      image_promises.push(loadImage(filenames[i]));
+      image_promises.push(load_image(filenames[i]));
     }
     return image_promises;
   }
 
-  function createMap(xsize, ysize) {
+  function create_map(xsize, ysize) {
     var map = {
       'meta': {
         'xsize': xsize,
@@ -281,19 +281,19 @@ window.onload = function () {
       'layers': {
       }
     };
-    addLayer(map);
+    add_layer(map);
     return map;
   }
 
-  function saveMap(map) {
+  function save_map(map) {
     return JSON.stringify(map);
   }
 
-  function loadMap(map_definition) {
+  function load_map(map_definition) {
     return JSON.parse(map_definition);
   }
 
-  function getKey(a, b) {
+  function get_key(a, b) {
     return a + ", " + b;
   }
 }
