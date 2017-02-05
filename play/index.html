@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <title>test</title>
+    <style>
+      #container {
+        display: flex;
+      }
+
+      #controls_container {
+        flex: none;
+        width: 300px;
+        height: 100%;
+      }
+
+      #stage_container {
+        flex: 1 2 auto;
+        margin-top: 20px;
+      }
+    </style>
+    <script src="../js/play.js"></script>
+  </head>
+  <body>
+    <div id="container">
+      <div id="controls_container">
+        <div id="controls">
+          <h2>Tileset Controls</h2>
+          <form id="controls_form">
+            <input name="map_title" id="map_title" placeholder="map title" type="text">
+            <input name="map_load" id="map_load" value="Load Map" type="button">
+            <textarea name="map_text" id="map_text" cols=35 rows=30></textarea>
+          </form>
+        </div>
+      </div>
+      <div id="stage_container">
+        <div id="stage">
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
