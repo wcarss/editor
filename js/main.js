@@ -177,7 +177,7 @@ window.onload = function () {
                       reject();
                     }, false);
                 });
-                img.src = filename;
+                img.src = "images/" + filename;
                 return promise;
               },
               image_promises = [];
@@ -359,7 +359,20 @@ window.onload = function () {
         y_size_field.addEventListener("input", map_resize_action);
       },
 
-      image_names = ['images/town.png', 'images/main.png', 'images/dungeon.png', 'images/building.png'],
+      image_names = [
+        'town.png',
+        'main.png',
+        'dungeon.png',
+        'building.png',
+        '0002-alice.jpg',
+        '1elxy.png',
+        'edited-tileset.png',
+        'edited-tileset2.png',
+        'sygma_dwtileset2.png',
+        'ffl3tiles.gif',
+        'xnrz1e.png',
+        'town15.png',
+      ],
       image_register = load_tilemaps(image_names),
       map = create_map(24, 24),
       canvas = add_canvas("stage", "main_canvas", 768, 768),
