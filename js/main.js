@@ -280,10 +280,8 @@ window.onload = function () {
       },
 
 
-      resize_map = function(map) {
-        var x_size = document.getElementById("map_x_size").value,
-          y_size = document.getElementById("map_y_size").value,
-          canvas = document.getElementById("main_canvas");
+      resize_map = function(map, x_size, y_size) {
+        var canvas = document.getElementById("main_canvas");
 
         console.log("resizing from (" + map.meta.xsize + ", " + map.meta.ysize + ") to (" + x_size + ", " + y_size + ")");
         map.meta.xsize = x_size;
@@ -301,15 +299,13 @@ window.onload = function () {
           map_layer_add_button = document.getElementById("map_layer_add"),
           stage = document.getElementById("stage"),
           map_tilemap = document.getElementById("map_tilemap"),
-          map_x_size_button = document.getElementById("map_x_size"),
-          map_y_size_button = document.getElementById("map_y_size"),
           x_size_field = document.getElementById("map_x_size"),
           y_size_field = document.getElementById("map_y_size"),
           move_listener = function(event) {
             paint_on_map(event, map, image_register, source_x, source_y, context);
           },
           map_resize_action = debounce(function(event) {
-            resize_map(map);
+            resize_map(map, x_size_field.value, y_size_field.value);
           }, 550),
           source_x = 0, source_y = 0;
 
@@ -345,7 +341,7 @@ window.onload = function () {
 
           x_size_field.value = map.meta.xsize;
           y_size_field.value = map.meta.ysize;
-          resize_map(map);
+          resize_map(map, x_size_field.value, y_size_field.value);
           fix_layer_buttons(map);
         });
         map_layer_add_button.addEventListener("click", function(event) {
