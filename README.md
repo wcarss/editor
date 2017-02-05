@@ -15,8 +15,7 @@ Todo / Dream list
 - event support
 - uploading your own tilesets
 - working with multiple maps
-- resizing maps
-- supporting the meta data I already have on the page
+- supporting the meta data I already have on the page -
 - saving maps to localstorage
 - saving linkable maps to the server (this is a long way off)
 - more advanced drawing functions (rect, fill, line)
@@ -32,11 +31,6 @@ Todo / Dream list
 - text-box support
 - repository of loaded images
 - saving image data w/ map
+- resizing maps - DONE
 
 potentially lots else, I'm sure :D
-
-License
-=======
-The image-sets contained are used without permission and are only here for testing. I'm sorry Enterbrain or whomever else made them originally: I promise this isn't worth money.
-
-The code should be considered to be available under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License; feel free to contact me if that license unduly restricts you in using my crap.

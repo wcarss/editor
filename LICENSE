@@ -1,0 +1,17 @@
+Copyright (c) 2017 Wyatt Carss
+
+Unless otherwise stated (e.g. for the debounce function, used with the
+underscore.js project[1]'s license), the code here is available under the
+terms of the Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+International License[2].
+
+The images contained are used without permission, and are only here
+for testing. To Enterbrain or whomever else made them originally: I 
+promise this usage of them isn't worth money and they will be removed
+at a future point.
+
+If you need a different license to this code, have questions, or need
+some action to be taken on my part, please contact the author.
+
+1 - https://github.com/jashkenas/underscore/blob/d63c5f48bb7cd7689ccde579cc323f26ec45af63/LICENSE
+2 - https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
