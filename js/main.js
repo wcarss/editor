@@ -48,7 +48,27 @@ window.onload = function () {
 
 
       save_map = function (map) {
-        return JSON.stringify(map);
+        var saveable_map = create_map(), i = 0, j = 0;
+        saveable_map.meta.top_layer = map.meta.top_layer;
+        saveable_map.meta.active_layer = map.meta.active_layer;
+        saveable_map.meta.xsize = map.meta.xsize;
+        saveable_map.meta.ysize = map.meta.ysize;
+
+        for (layer_index = 1; layer_index <= map.meta.top_layer; layer_index++) {
+          saveable_map.layers[layer_index] = {};
+          for (i = 0; i < map.meta.xsize; i++) {
+            for (j = 0; j < map.meta.ysize; j++) {
+              console.log(layer_index + ": (" + i + ", " + j + ")");
+              tile = map.layers[layer_index][get_key(i, j)];
+              if (tile) {
+                console.log("writing.");
+                saveable_map.layers[layer_index][get_key(i, j)] = map.layers[layer_index][get_key(i, j)];
+              }
+            }
+          }
+        }
+
+        return JSON.stringify(saveable_map);
       },
 
 
@@ -260,15 +280,37 @@ window.onload = function () {
       },
 
 
+      resize_map = function(map) {
+        var x_size = document.getElementById("map_x_size").value,
+          y_size = document.getElementById("map_y_size").value,
+          canvas = document.getElementById("main_canvas");
+
+        console.log("resizing from (" + map.meta.xsize + ", " + map.meta.ysize + ") to (" + x_size + ", " + y_size + ")");
+        map.meta.xsize = x_size;
+        map.meta.ysize = y_size;
+        canvas.width = 32 * x_size;
+        canvas.height = 32 * y_size;
+        context = canvas.getContext("2d");
+        draw_map(context, map);
+      },
+
+
       setup_clicks = function (map, image_register, context) {
         var save_button = document.getElementById("map_save"),
           load_button = document.getElementById("map_load"),
           map_layer_add_button = document.getElementById("map_layer_add"),
           stage = document.getElementById("stage"),
           map_tilemap = document.getElementById("map_tilemap"),
+          map_x_size_button = document.getElementById("map_x_size"),
+          map_y_size_button = document.getElementById("map_y_size"),
+          x_size_field = document.getElementById("map_x_size"),
+          y_size_field = document.getElementById("map_y_size"),
           move_listener = function(event) {
             paint_on_map(event, map, image_register, source_x, source_y, context);
-          };
+          },
+          map_resize_action = debounce(function(event) {
+            resize_map(map);
+          }, 550),
           source_x = 0, source_y = 0;
 
         map_tilemap.addEventListener("click", function(event) {
@@ -301,20 +343,26 @@ window.onload = function () {
           map_layer_list = document.getElementById("map_layer_list");
           map_layer_list.innerHTML = "";
 
-          draw_map(context, map);
+          x_size_field.value = map.meta.xsize;
+          y_size_field.value = map.meta.ysize;
+          resize_map(map);
           fix_layer_buttons(map);
         });
         map_layer_add_button.addEventListener("click", function(event) {
           add_layer(map);
           fix_layer_buttons(map);
         });
-      },
 
+        x_size_field.value = map.meta.xsize;
+        y_size_field.value = map.meta.ysize;
+        x_size_field.addEventListener("input", map_resize_action);
+        y_size_field.addEventListener("input", map_resize_action);
+      },
 
       image_names = ['images/town.png', 'images/main.png', 'images/dungeon.png', 'images/building.png'],
       image_register = load_tilemaps(image_names),
-      map = create_map(38, 34),
-      canvas = add_canvas("stage", "canvas_layer_1", 780, 680),
+      map = create_map(24, 24),
+      canvas = add_canvas("stage", "main_canvas", 768, 768),
       context = canvas.getContext("2d");
 
     setup_clicks(map, image_register, context);
@@ -325,3 +373,43 @@ window.onload = function () {
   main();
 };
 
+
+/* debounce lifted from underscore.js */
+/* Copyright (c) 2009-2017 Jeremy Ashkenas, DocumentCloud and Investigative
+Reporters & Editors
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE. */
+
+function debounce(func, wait, immediate) {
+    var timeout;
+    return function() {
+        var context = this, args = arguments;
+        var later = function() {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+    };
+};
