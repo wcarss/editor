@@ -4,15 +4,12 @@ window.onload = function () {
         var canvas = document.createElement('canvas'),
           div = document.getElementById(node_id);
 
+        //canvas.style = "position: relative; top: 0; left: 0;";
         canvas.style = "position: absolute;";
         canvas.id = id;
         canvas.width = width;
         canvas.height = height;
-        if (div.firstChild) {
-          div.insertBefore(canvas, div.firstChild);
-        } else {
-          div.appendChild(canvas);
-        }
+        div.appendChild(canvas);
 
         return canvas;
       },
@@ -120,26 +117,79 @@ window.onload = function () {
 
 
       resize_map = function(map, x_size, y_size) {
-        var canvas = document.getElementById("main_canvas");
+        var base_canvas = document.getElementById("base_canvas");
+        var player_canvas = document.getElementById("player_canvas");
+        var overlay_canvas = document.getElementById("overlay_canvas");
 
         console.log("resizing from (" + map.meta.xsize + ", " + map.meta.ysize + ") to (" + x_size + ", " + y_size + ")");
         map.meta.xsize = x_size;
         map.meta.ysize = y_size;
-        canvas.width = 32 * x_size;
-        canvas.height = 32 * y_size;
-        context = canvas.getContext("2d");
-        draw_map(context, map);
+        base_canvas.width = 32 * x_size;
+        base_canvas.height = 32 * y_size;
+        player_canvas.width = 32 * x_size;
+        player_canvas.height = 32 * y_size;
+        overlay_canvas.width = 32 * x_size;
+        overlay_canvas.height = 32 * y_size;
+        base_context = base_canvas.getContext("2d");
+        player_context = player_canvas.getContext("2d");
+        overlay_context = overlay_canvas.getContext("2d");
+
+        if (!map.player) {
+          map.player = {
+            'start_x': 2,
+            'start_y': 3,
+            'x': 2,
+            'y': 3,
+            'xsize': 28,
+            'ysize': 60,
+            'speed': 0.7
+          }
+        }
+
+        draw_map({'base': base_context, 'player': player_context, 'overlay': overlay_context}, map);
       },
 
 
-      draw_map = function (context, map) {
+      draw_map = function (contexts, map) {
         var block_x_offset = 32, block_y_offset = 32,
           block_x_size = 32, block_y_size = 32,
           xsize = map['meta']['xsize'], ysize = map['meta']['ysize'],
-          top_layer = map['meta']['top_layer'];
+          top_layer = map['meta']['top_layer'],
+          layer_index = 0, i = 0, j = 0;
 
-        for (var layer_index = 1; layer_index <= top_layer; layer_index++) {
+        context = contexts['base'];
+        for (layer_index = 0; layer_index <= 2; layer_index++) {
           layer = map['layers'][layer_index];
+          if (!layer) {
+            continue;
+          }
+          for (i = 0; i < xsize; i++) {
+            for (j = 0; j < ysize; j++) {
+              tile = layer[get_key(i, j)];
+              if (tile) {
+                context.drawImage(
+                  image_register[tile['filename']],
+                  tile['x_index']*16, tile['y_index']*16,
+                  16, 16,
+                  i*32, j*32,
+                  32, 32
+                );
+              }
+            }
+          }
+        }
+
+        context = contexts['player'];
+        context.clearRect(map.player.x*32, (map.player.y-1)*32, map.player.xsize, map.player.ysize);
+        context.fillStyle = "maroon";
+        context.fillRect(map.player.x*32, (map.player.y-1)*32, map.player.xsize, map.player.ysize);
+
+        context = contexts['overlay'];
+        for (layer_index = 3; layer_index <= top_layer; layer_index++) {
+          layer = map['layers'][layer_index];
+          if (!layer) {
+            continue;
+          }
           for (i = 0; i < xsize; i++) {
             for (j = 0; j < ysize; j++) {
               tile = layer[get_key(i, j)];
@@ -158,14 +208,54 @@ window.onload = function () {
       },
 
 
-      setup_clicks = function (map, image_register, context) {
-        var load_button = document.getElementById("map_load");
+      setup_clicks = function (map, context) {
+        var load_button = document.getElementById("map_load"),
+          state = document.getElementById("stage");
 
         load_button.addEventListener("click", function(event) {
           var map_text = document.getElementById("map_text"),
 
           map = load_map(map_text.value);
           resize_map(map, map.meta.xsize, map.meta.ysize);
+        });
+
+        if (!map.player) {
+          map.player = {
+            'start_x': 2,
+            'start_y': 3,
+            'x': 2,
+            'y': 3,
+            'xsize': 28,
+            'ysize': 60,
+            'speed': 1
+          }
+        }
+
+        stage.addEventListener("keydown", function(event) {
+          if (event.defaultPrevented) {
+            return; // Do nothing if the event was already processed
+          }
+
+          context.clearRect(map.player.x*32, (map.player.y-1)*32, map.player.xsize, map.player.ysize);
+          switch (event.key) {
+            case "ArrowLeft":
+              map.player.x -= map.player.speed;
+            break;
+            case "ArrowRight":
+              map.player.x += map.player.speed;
+            break;
+            case "ArrowUp":
+              map.player.y -= map.player.speed;
+            break;
+            case "ArrowDown":
+              map.player.y += map.player.speed;
+            break;
+          }
+          context.fillStyle = "maroon";
+          context.fillRect(map.player.x*32, (map.player.y-1)*32, map.player.xsize, map.player.ysize);
+          //console.log(map.player.x, map.player.y);
+
+          event.preventDefault();
         });
       },
 
@@ -190,11 +280,16 @@ window.onload = function () {
 
     Promise.all(image_promises).then(function () {
       var map = load_map(map_definition),
-        canvas = add_canvas("stage", "main_canvas", map.meta.xsize*32, map.meta.ysize*32),
-        context = canvas.getContext("2d");
+        base_canvas = add_canvas("stage", "base_canvas", map.meta.xsize*32, map.meta.ysize*32),
+        player_canvas = add_canvas("stage", "player_canvas", map.meta.xsize*32, map.meta.ysize*32),
+        overlay_canvas = add_canvas("stage", "overlay_canvas", map.meta.xsize*32, map.meta.ysize*32),
+        base_context = base_canvas.getContext("2d"),
+        player_context = player_canvas.getContext("2d"),
+        overlay_context = overlay_canvas.getContext("2d")
+        contexts = {'base': base_context, 'player': player_context, 'overlay': overlay_context};
 
-      setup_clicks(map, image_register, context);
-      draw_map(context, map);
+      setup_clicks(map, contexts['player']);
+      draw_map(contexts, map);
     });
   };
 
