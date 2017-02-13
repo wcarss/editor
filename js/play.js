@@ -180,9 +180,17 @@ window.onload = function () {
         }
 
         context = contexts['player'];
-        context.clearRect(map.player.x*32, (map.player.y-1)*32, map.player.xsize, map.player.ysize);
-        context.fillStyle = "maroon";
-        context.fillRect(map.player.x*32, (map.player.y-1)*32, map.player.xsize, map.player.ysize);
+        context.clearRect(map.player.x*32-8, (map.player.y-1)*32, 48, 64);
+        context.drawImage(
+          image_register['Tutorial018.png'],
+          0, 63,
+          24, 32,
+          map.player.x*32-8,
+          (map.player.y-1)*32,
+          48, 64
+        );
+        // context.fillStyle = "maroon";
+        // context.fillRect(map.player.x*32, (map.player.y-1)*32, map.player.xsize, map.player.ysize);
 
         context = contexts['overlay'];
         for (layer_index = 3; layer_index <= top_layer; layer_index++) {
@@ -208,7 +216,7 @@ window.onload = function () {
       },
 
 
-      setup_clicks = function (map, context) {
+      setup_clicks = function (map, context, image_register) {
         var load_button = document.getElementById("map_load"),
           state = document.getElementById("stage");
 
@@ -236,23 +244,35 @@ window.onload = function () {
             return; // Do nothing if the event was already processed
           }
 
-          context.clearRect(map.player.x*32, (map.player.y-1)*32, map.player.xsize, map.player.ysize);
+          context.clearRect(map.player.x*32-8, (map.player.y-1)*32, 48, 64);
           switch (event.key) {
             case "ArrowLeft":
-              map.player.x -= map.player.speed;
+              map.player.x -= map.player.speed / 4;
+              y_offset = 96;
             break;
             case "ArrowRight":
-              map.player.x += map.player.speed;
+              map.player.x += map.player.speed / 4;
+              y_offset = 32;
             break;
             case "ArrowUp":
-              map.player.y -= map.player.speed;
+              map.player.y -= map.player.speed / 4;
+              y_offset = 0;
             break;
             case "ArrowDown":
-              map.player.y += map.player.speed;
+              map.player.y += map.player.speed / 4;
+              y_offset = 64;
             break;
           }
-          context.fillStyle = "maroon";
-          context.fillRect(map.player.x*32, (map.player.y-1)*32, map.player.xsize, map.player.ysize);
+          //context.fillStyle = "maroon";
+          //context.fillRect(map.player.x*32, (map.player.y-1)*32, map.player.xsize, map.player.ysize);
+          context.drawImage(
+            image_register['Tutorial018.png'],
+            Math.round(Math.floor(Math.random() * 3))*24, y_offset,
+            24, 32,
+            map.player.x*32-8,
+            (map.player.y-1)*32,
+            48, 64
+          );
           //console.log(map.player.x, map.player.y);
 
           event.preventDefault();
@@ -272,6 +292,7 @@ window.onload = function () {
         'ffl3tiles.gif',
         'xnrz1e.png',
         'town15.png',
+        'Tutorial018.png',
       ],
       image_stuff = load_tilemaps(image_names),
       image_register = image_stuff.image_register,
@@ -288,7 +309,7 @@ window.onload = function () {
         overlay_context = overlay_canvas.getContext("2d")
         contexts = {'base': base_context, 'player': player_context, 'overlay': overlay_context};
 
-      setup_clicks(map, contexts['player']);
+      setup_clicks(map, contexts['player'], image_register);
       draw_map(contexts, map);
     });
   };
