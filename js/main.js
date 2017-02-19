@@ -301,12 +301,26 @@ window.onload = function () {
           map_tilemap = document.getElementById("map_tilemap"),
           x_size_field = document.getElementById("map_x_size"),
           y_size_field = document.getElementById("map_y_size"),
+          eraser_button = document.getElementById("eraser_button"),
+          flood_button = document.getElementById("flood_button"),
+          rect_button = document.getElementById("rect_button"),
+          pencil_button = document.getElementById("pencil_button"),
+          showpass_button = document.getElementById("show_passability_button"),
+          hidepass_button = document.getElementById("hide_passability_button"),
           move_listener = function(event) {
             paint_on_map(event, map, image_register, source_x, source_y, context);
           },
           map_resize_action = debounce(function(event) {
             resize_map(map, x_size_field.value, y_size_field.value);
           }, 550),
+          not_implemented_action = function(event) {
+            var old_value = event.target.value;
+            console.log(old_value + ' is not implemented yet!');
+            event.target.value = "not implemented!";
+            setTimeout(function() {
+              event.target.value = old_value;
+            }, 1500);
+          },
           source_x = 0, source_y = 0;
 
         map_tilemap.addEventListener("click", function(event) {
@@ -353,6 +367,14 @@ window.onload = function () {
         y_size_field.value = map.meta.ysize;
         x_size_field.addEventListener("input", map_resize_action);
         y_size_field.addEventListener("input", map_resize_action);
+
+        showpass_button.addEventListener('click', not_implemented_action);
+        hidepass_button.addEventListener('click', not_implemented_action);
+        eraser_button.addEventListener('click', not_implemented_action);
+        fill_button.addEventListener('click', not_implemented_action);
+        rect_button.addEventListener('click', not_implemented_action);
+        pencil_button.addEventListener('click', not_implemented_action);
+
       },
 
       image_names = [

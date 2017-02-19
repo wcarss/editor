@@ -65,10 +65,18 @@
               <ol id="map_layer_list">
               </ol>
             </div>
-            <input name="map_title" id="map_title" placeholder="map title" type="text">
-            <input name="map_x_size" id="map_x_size" placeholder="map x-size e.g. 15" type="text">
-            <input name="map_y_size" id="map_y_size" placeholder="map y-size e.g. 20" type="text">
+            <span>map x size:</span><input name="map_x_size" id="map_x_size" placeholder="map x-size e.g. 15" type="text">
+            <br>
+            <span>map y size:</span><input name="map_y_size" id="map_y_size" placeholder="map y-size e.g. 20" type="text">
+            <br>
+            <input name="eraser_button" id="eraser_button" value="Eraser" type="button">
+            <input name="fill_button" id="fill_button" value="Flood Fill" type="button">
+            <input name="rect_button" id="rect_button" value="Rect" type="button">
+            <input name="pencil_button" id="pencil_button" value="Pencil" type="button">
             <div id="map_tilemap"><canvas id="map_tilemap_canvas">tilemap canvas can't draw</canvas></div>
+            <input name="hide_passability_button" id="hide_passability_button" value="Hide Passability" type="button">
+            <input name="show_passability_button" id="show_passability_button" value="Show Passability" type="button">
+            <br><br>
             <input name="map_save" id="map_save" value="Export Map" type="button">
             <input name="map_load" id="map_load" value="Load Map" type="button">
             <textarea name="map_text" id="map_text" cols=40 rows=30></textarea>
