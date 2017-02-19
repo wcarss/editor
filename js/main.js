@@ -43,7 +43,7 @@ window.onload = function () {
         if (typeof map['layers'][top_layer] === "undefined") {
           map['layers'][top_layer] = {};
         }
-        map['meta']['active_layer'] = top_layer;;
+        map['meta']['active_layer'] = top_layer;
       },
 
 
