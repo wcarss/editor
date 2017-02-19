@@ -23,8 +23,10 @@ window.onload = function () {
           'meta': {
             'xsize': xsize,
             'ysize': ysize,
+            'show_passability': false
           },
           'layers': {
+            'passability': {}
           }
         };
         add_layer(map);
@@ -53,6 +55,7 @@ window.onload = function () {
         saveable_map.meta.active_layer = map.meta.active_layer;
         saveable_map.meta.xsize = map.meta.xsize;
         saveable_map.meta.ysize = map.meta.ysize;
+        saveable_map.meta.show_passability = map.meta.show_passability;
 
         for (layer_index = 1; layer_index <= map.meta.top_layer; layer_index++) {
           saveable_map.layers[layer_index] = {};
@@ -64,6 +67,19 @@ window.onload = function () {
                 console.log("writing.");
                 saveable_map.layers[layer_index][get_key(i, j)] = map.layers[layer_index][get_key(i, j)];
               }
+            }
+          }
+        }
+
+        layer_index = "passability";
+        saveable_map.layers[layer_index] = {};
+        for (i = 0; i < map.meta.xsize; i++) {
+          for (j = 0; j < map.meta.ysize; j++) {
+            console.log(layer_index + ": (" + i + ", " + j + ")");
+            tile = map.layers[layer_index][get_key(i, j)];
+            if (tile) {
+              console.log("writing.");
+              saveable_map.layers[layer_index][get_key(i, j)] = map.layers[layer_index][get_key(i, j)];
             }
           }
         }
@@ -99,36 +115,45 @@ window.onload = function () {
 
       paint_on_map = function (event, map, image_register, source_x, source_y, context) {
         var scroll_state = get_scroll_state(event.target.id),
-            tilemap_canvas = null,
-            tile = null,
-            layer_index = null;
-            x_index = parseInt(
-              Math.floor((event.clientX + scroll_state['scroll_left'] - stage.offsetLeft) / 32)
-            ),
-            y_index = parseInt(
-              Math.floor((event.clientY + scroll_state['scroll_top'] - stage.offsetTop) / 32)
-            ),
-            dest_x = 32 * x_index;
-            dest_y = 32 * y_index;
-            layer = map['layers'][map['meta']['active_layer']];
+          tilemap_canvas = null,
+          tile = null,
+          layer_index = null;
+          x_index = parseInt(
+            Math.floor((event.clientX + scroll_state['scroll_left'] - stage.offsetLeft) / 32)
+          ),
+          y_index = parseInt(
+            Math.floor((event.clientY + scroll_state['scroll_top'] - stage.offsetTop) / 32)
+          ),
+          dest_x = 32 * x_index;
+          dest_y = 32 * y_index;
+          layer = map['layers'][map['meta']['active_layer']];
 
-          layer[get_key(x_index, y_index)] = {
-            'filename': image_register['active_tilemap'],
-            'x_index': source_x / 32,
-            'y_index': source_y / 32,
-          };
+        layer[get_key(x_index, y_index)] = {
+          'filename': image_register['active_tilemap'],
+          'x_index': source_x / 32,
+          'y_index': source_y / 32,
+        };
 
-          context.clearRect(dest_x, dest_y, 32, 32);
-          for (layer_index = 1; layer_index <= map['meta']['top_layer']; layer_index++) {
-            layer = map['layers'][layer_index];
-            tile = map['layers'][layer_index][get_key(x_index, y_index)];
-            if (tile) {
-              tilemap_canvas = image_register[tile['filename']];
-              context.drawImage(
-                tilemap_canvas, tile.x_index*16, tile.y_index*16, 16, 16, dest_x, dest_y, 32, 32
-              );
-            }
+        context.clearRect(dest_x, dest_y, 32, 32);
+        for (layer_index = 1; layer_index <= map['meta']['top_layer']; layer_index++) {
+          layer = map['layers'][layer_index];
+          tile = map['layers'][layer_index][get_key(x_index, y_index)];
+          if (tile) {
+            tilemap_canvas = image_register[tile['filename']];
+            context.drawImage(
+              tilemap_canvas, tile.x_index*16, tile.y_index*16, 16, 16, dest_x, dest_y, 32, 32
+            );
           }
+        }
+        if (map.meta.show_passability) {
+          tile = map.layers.passability[get_key(x_index, y_index)];
+          if (tile) {
+            tilemap_canvas = image_register[tile['filename']];
+            context.drawImage(
+              tilemap_canvas, tile.x_index*16, tile.y_index*16, 16, 16, dest_x, dest_y, 32, 32
+            );
+          }
+        }
       },
 
 
@@ -159,6 +184,7 @@ window.onload = function () {
         for (var i = 1; i <= map['meta']['top_layer']; i++) {
           add_layer_button(i, map);
         }
+        add_layer_button("passability", map);
       },
 
 
@@ -192,10 +218,10 @@ window.onload = function () {
             image_register['active_tilemap'] = filename;
             var canvas = document.getElementById("map_tilemap_canvas");
             var ctx = canvas.getContext("2d");
-            canvas.width = 960;
-            canvas.height = 512;
-            ctx.clearRect(0, 0, 960, 512);
-            ctx.drawImage(image_register[filename], 0, 0, 960, 512);
+            canvas.width = image_register[filename].width * 2;
+            canvas.height = image_register[filename].height * 2;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image_register[filename], 0, 0, canvas.width, canvas.height);
           },
 
           canvas_from_image = function (image, width, height) {
@@ -218,7 +244,7 @@ window.onload = function () {
               p = document.createElement('p'),
               ol = document.getElementById("map_list");
 
-            var tilemap_canvas = canvas_from_image(image_register[filename], 240, 128);
+            var tilemap_canvas = canvas_from_image(image_register[filename]);
             tilemap_canvas.addEventListener('click', function () {
               change_active_tilemap(image_register, filename);
             }, false);
@@ -257,8 +283,29 @@ window.onload = function () {
           xsize = map['meta']['xsize'], ysize = map['meta']['ysize'],
           top_layer = map['meta']['top_layer'];
 
+        context.clearRect(0, 0, map.meta.xsize * 32, map.meta.ysize * 32);
         for (var layer_index = 1; layer_index <= top_layer; layer_index++) {
           layer = map['layers'][layer_index];
+          for (i = 0; i < xsize; i++) {
+            for (j = 0; j < ysize; j++) {
+              context.strokeRect(
+                i * block_x_offset, j * block_y_offset, block_x_size, block_y_size
+              );
+              tile = layer[get_key(i, j)];
+              if (tile) {
+                context.drawImage(
+                  image_register[tile['filename']],
+                  tile['x_index']*16, tile['y_index']*16,
+                  16, 16,
+                  i*32, j*32,
+                  32, 32
+                );
+              }
+            }
+          }
+        }
+        if (map.meta.show_passability) {
+          layer = map.layers.passability;
           for (i = 0; i < xsize; i++) {
             for (j = 0; j < ysize; j++) {
               context.strokeRect(
@@ -305,6 +352,7 @@ window.onload = function () {
           flood_button = document.getElementById("flood_button"),
           rect_button = document.getElementById("rect_button"),
           pencil_button = document.getElementById("pencil_button"),
+          passability_container = document.getElementById("passability_controls"),
           showpass_button = document.getElementById("show_passability_button"),
           hidepass_button = document.getElementById("hide_passability_button"),
           move_listener = function(event) {
@@ -336,6 +384,13 @@ window.onload = function () {
         });
 
         stage.addEventListener("mousedown", function(event) {
+          if (image_register['active_tilemap'] == 'simple_passability.png') {
+            map.meta.active_layer = 'passability';
+            fix_layer_buttons(map);
+          } else if (map.meta.active_layer == 'passability') {
+            map.meta.active_layer = map.meta.top_layer;
+            fix_layer_buttons(map);
+          }
           paint_on_map(event, map, image_register, source_x, source_y, context);
           stage.addEventListener("mousemove", move_listener, false);
         });
@@ -368,8 +423,14 @@ window.onload = function () {
         x_size_field.addEventListener("input", map_resize_action);
         y_size_field.addEventListener("input", map_resize_action);
 
-        showpass_button.addEventListener('click', not_implemented_action);
-        hidepass_button.addEventListener('click', not_implemented_action);
+        showpass_button.addEventListener('click', function () {
+          map.meta.show_passability = true;
+          draw_map(context, map);
+        });
+        hidepass_button.addEventListener('click', function () {
+          map.meta.show_passability = false;
+          draw_map(context, map);
+        });
         eraser_button.addEventListener('click', not_implemented_action);
         fill_button.addEventListener('click', not_implemented_action);
         rect_button.addEventListener('click', not_implemented_action);
@@ -378,6 +439,7 @@ window.onload = function () {
       },
 
       image_names = [
+        'simple_passability.png',
         'town.png',
         'main.png',
         'dungeon.png',
