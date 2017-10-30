@@ -4,7 +4,7 @@ window.onload = function () {
         var canvas = document.createElement('canvas'),
           div = document.getElementById(node_id);
 
-        canvas.style = "position: absolute;";
+        canvas.style = "position: absolute; top: 9px;";
         canvas.id = id;
         canvas.width = width;
         canvas.height = height;
@@ -141,7 +141,7 @@ window.onload = function () {
               Math.floor((event.clientX + scroll_state['scroll_left'] - stage.offsetLeft) / 32)
             ),
             y_index = parseInt(
-              Math.floor((event.clientY + scroll_state['scroll_top'] - stage.offsetTop) / 32)
+              Math.floor((event.clientY + scroll_state['scroll_top'] - 10 /* magic number 10 is top of canvas */) / 32)
             ),
             dest_x = 32 * x_index;
             dest_y = 32 * y_index;
@@ -250,7 +250,6 @@ window.onload = function () {
 
           add_tile_map = function (image_register, filename) {
             var li = document.createElement('li'),
-              p = document.createElement('p'),
               ol = document.getElementById("map_list");
 
             var tilemap_canvas = canvas_from_image(image_register[filename], 240, 128);
@@ -258,8 +257,6 @@ window.onload = function () {
               change_active_tilemap(image_register, filename);
             }, false);
 
-            p.innerHTML = filename;
-            li.appendChild(p);
             li.appendChild(tilemap_canvas);
             ol.appendChild(li);
 

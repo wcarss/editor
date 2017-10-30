@@ -1,7 +1,6 @@
 <!doctype html>
 <html>
   <head>
-  	<title>test</title>
     <style>
       #container {
       	display: flex;
@@ -9,7 +8,7 @@
 
       #mode_container {
         flex: none;
-        width: 300px;
+        width: 265px;
         overflow: scroll;
       }
 
@@ -19,13 +18,24 @@
       	overflow: scroll;
       }
 
+      div, canvas {
+        padding: 0;
+        margin: 0;
+        border: 0;
+      }
+
       #stage_container {
         flex: 1 2 auto;
       	margin-top: 20px;
       }
 
       #map_list {
-      	margin-left: -10px;
+        margin-left: -40px;
+        margin-top: -10px;
+      }
+
+      #map_list li {
+        list-style: none;
       }
 
       #map_layer_list {
@@ -56,7 +66,6 @@
     <div id="container">
       <div id="mode_container">
         <div id="map_mode">
-          <h2>Tilesets</h2>
           <ol id="map_list">
           	<!--<li><p>town.jpg</p><img src="images/town.png" width=240 height=128></li>-->
           </ol>
@@ -65,7 +74,6 @@
       <div id="controls_container">
         <div id="controls">
           <div id="map_tilemap"><canvas id="map_tilemap_canvas">tilemap canvas can't draw</canvas></div>
-          <h2>Tileset Controls</h2>
           <form id="controls_form">
             <div id="map_layers_container">
               <input name="map_layer_add" id="map_layer_add" value="Add Layer" type="button">
