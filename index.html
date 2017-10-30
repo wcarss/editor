@@ -33,6 +33,12 @@
         padding-left: 10px;
       }
 
+      #map_tilemap {
+        flex: none;
+        width: 400px;
+        overflow: scroll;
+      }
+
       .map_layer_list_item {
         display: inline-block;
         border: 1px solid black;
@@ -58,6 +64,7 @@
       </div>
       <div id="controls_container">
         <div id="controls">
+          <div id="map_tilemap"><canvas id="map_tilemap_canvas">tilemap canvas can't draw</canvas></div>
           <h2>Tileset Controls</h2>
           <form id="controls_form">
             <div id="map_layers_container">
@@ -76,15 +83,15 @@
               <input name="rect_button" id="rect_button" value="Rect" type="button">
               <input name="pencil_button" id="pencil_button" value="Pencil" type="button">
             </div>
-            <div id="map_tilemap"><canvas id="map_tilemap_canvas">tilemap canvas can't draw</canvas></div>
             <div id="passability_controls">
               <input name="hide_passability_button" id="hide_passability_button" value="Hide Passability" type="button">
               <input name="show_passability_button" id="show_passability_button" value="Show Passability" type="button">
             </div>
             <div id="map_file_controls">
               <input name="map_save" id="map_save" value="Export Map" type="button">
+              <input name="creek_save" id="creek_save" value="Export for Creek" type="button">
               <input name="map_load" id="map_load" value="Load Map" type="button">
-              <textarea name="map_text" id="map_text" cols=40 rows=30></textarea>
+              <textarea name="map_text" id="map_text" cols=40 rows=5></textarea>
             </div>
           </form>
         </div>

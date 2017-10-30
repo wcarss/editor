@@ -47,22 +47,57 @@ window.onload = function () {
       },
 
 
-      save_map = function (map) {
-        var saveable_map = create_map(), i = 0, j = 0;
+      save_map = function (map, creek) {
+        var saveable_map = create_map(), i = 0, j = 0, new_tile = null;
         saveable_map.meta.top_layer = map.meta.top_layer;
         saveable_map.meta.active_layer = map.meta.active_layer;
         saveable_map.meta.xsize = map.meta.xsize;
         saveable_map.meta.ysize = map.meta.ysize;
 
+        if (creek) {
+          saveable_map = {
+            'width': map.meta.xsize * 32,
+            'height': map.meta.ysize * 32,
+            'id': "map-"+performance.now(),
+            'player_layer': map.meta.top_layer,
+            'layers': [
+            ]
+          };
+        }
+
         for (layer_index = 1; layer_index <= map.meta.top_layer; layer_index++) {
-          saveable_map.layers[layer_index] = {};
+          if (creek) {
+            saveable_map.layers.push([])
+          } else {
+            saveable_map.layers[layer_index] = {};
+          }
+
           for (i = 0; i < map.meta.xsize; i++) {
             for (j = 0; j < map.meta.ysize; j++) {
               console.log(layer_index + ": (" + i + ", " + j + ")");
               tile = map.layers[layer_index][get_key(i, j)];
               if (tile) {
                 console.log("writing.");
-                saveable_map.layers[layer_index][get_key(i, j)] = map.layers[layer_index][get_key(i, j)];
+                if (creek) {
+                  new_tile = {
+                    source_x: tile.x_index*16,
+                    source_y: tile.y_index*16,
+                    source_width: 16,
+                    source_height: 16,
+                    x: i*32,
+                    y: j*32,
+                    x_scale: 2,
+                    y_scale: 2,
+                    x_size: 32,
+                    y_size: 32,
+                    id: "tile-"+i+"-"+j,
+                    img: tile.filename.slice(0, tile.filename.length-".png".length),
+                    layer: layer_index,
+                  }
+                  saveable_map.layers[layer_index-1].push(new_tile);
+                } else {
+                  saveable_map.layers[layer_index][get_key(i, j)] = map.layers[layer_index][get_key(i, j)];
+                }
               }
             }
           }
@@ -295,6 +330,7 @@ window.onload = function () {
 
       setup_clicks = function (map, image_register, context) {
         var save_button = document.getElementById("map_save"),
+          creek_export_button = document.getElementById("creek_save"),
           load_button = document.getElementById("map_load"),
           map_layer_add_button = document.getElementById("map_layer_add"),
           stage = document.getElementById("stage"),
@@ -342,10 +378,13 @@ window.onload = function () {
         document.addEventListener("mouseup", function(event) {
           stage.removeEventListener("mousemove", move_listener, false);
         });
-
         save_button.addEventListener("click", function(event) {
           var map_text = document.getElementById("map_text");
-          map_text.value = save_map(map);
+          map_text.value = save_map(map, false/* not for creek */);
+        });
+        creek_export_button.addEventListener("click", function(event) {
+          var map_text = document.getElementById("map_text");
+          map_text.value = save_map(map, true/* export for creek */);
         });
         load_button.addEventListener("click", function(event) {
           var map_text = document.getElementById("map_text");
